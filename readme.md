@@ -6,6 +6,10 @@ Follow these [insturctions](https://airflow.apache.org/docs/apache-airflow/stabl
 * Had to bump `version` to 3.9
 * Added `ports` to `postgres` service, to have access from host
 
+Changed Airflow executor to `LocalExecuter`:
+* Removed `redis` service and dependencies
+* Remove `worker` service
+
 Manually add a Postgres Airflow Connection:
 ```shell
 ./airflow airflow connections add --conn-type postgre --conn-host postgres --conn-schema citibike --conn-login airflow --conn-password airflow postgres
