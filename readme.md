@@ -10,6 +10,11 @@ Changed Airflow executor to `LocalExecuter`:
 * Removed `redis` service and dependencies
 * Remove `worker` service
 
+The official Airflow image doesn't come with `matplotlib`, so we need to create a new one which will include it
+```shell
+docker build -t ymadar/airflow .
+```
+
 Manually add a Postgres Airflow Connection:
 ```shell
 ./airflow airflow connections add --conn-type postgre --conn-host postgres --conn-schema citibike --conn-login airflow --conn-password airflow postgres
@@ -41,3 +46,23 @@ Set a unique index to enable `upsert`
 ```postgresql
 CREATE UNIQUE INDEX stations_idx on stations (station_id, station_color, date_);
 ```
+# Starting the project
+Initialize Airflow
+```shell
+docker-compose up airflow-init
+```
+Launch Airflow
+```shell
+docker-compose up
+```
+Once `citibike` runs there would be a pdf file with the dashboard on the `scheduler`, copy it to the host
+```shell
+docker cp docker-airflow_airflow-scheduler_1:/opt/airflow/dashboard.pdf .
+```
+# `citibike` DAG
+The dag has two tasks:
+* `fetch_and_load` - Download stations status from the API, enrich it with `station_color` and `date`, update the `stations` table.
+* `create_dashboard` - Queries Postgres, results stored in Pandas Dataframe, plot results and save to pdf on the `scheduler`
+
+
+

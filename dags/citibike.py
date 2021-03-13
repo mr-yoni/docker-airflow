@@ -1,10 +1,9 @@
 from datetime import timedelta
 from typing import Iterable, Dict
 
-import pendulum
 import pandas as pd
+import pendulum
 from airflow import DAG
-from airflow.operators.email import EmailOperator
 from airflow.operators.python import PythonOperator
 from airflow.providers.http.hooks.http import HttpHook
 from airflow.providers.postgres.hooks.postgres import PostgresHook
@@ -74,7 +73,15 @@ def create_dashboard_fn(target_table: str, execution_date):
 
     results: DataFrame = postegres_hook.get_pandas_df(sql)
 
-    results.plot('date_', 'num_of_red_stations', 'area')
+    # Set `date_` as index for plotting
+    results['date_'] = pd.to_datetime(results.date_)
+    results = results.sort_values(['date_'])
+    results = results.set_index('date_')
+
+    plot = results.plot(kind='area', figsize=(10, 10), title='Number of red stations vs Date', xlabel='Date',
+                        ylabel='Number of red stations')
+
+    plot.get_figure().savefig('dashboard.pdf', format='pdf')
 
 
 dag = DAG(
@@ -98,8 +105,8 @@ fetch_and_load = PythonOperator(task_id='fetch_and_load',
                                 )
 
 create_dashboard = PythonOperator(task_id='create_dashboard',
-                                 python_callable=create_dashboard_fn,
-                                 op_args=[target_table],
-                                 dag=dag)
+                                  python_callable=create_dashboard_fn,
+                                  op_args=[target_table],
+                                  dag=dag)
 
 fetch_and_load >> create_dashboard
