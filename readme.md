@@ -22,7 +22,7 @@ Manually add a Postgres Airflow Connection:
 
 ## Postgres
 
-Connect to Postgres and Manually add a `citibike` database
+Connecting to Postgres
 ```shell
 psql postgresql://airflow:airflow@postgres/airflow
 ```
